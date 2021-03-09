@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -9,8 +10,12 @@ import (
 )
 
 func main() {
+	// Setup flag for filename
+	fileNamePtr := flag.String("csv", "problems.csv", "a csv file in the format of 'question,answer' (default \"problems.csv\")")
+	flag.Parse()
+
 	// Open the file
-	csvfile, err := os.Open("problems.csv")
+	csvfile, err := os.Open(*fileNamePtr)
 	if err != nil {
 		log.Fatalln("Couldn't open the csv file", err)
 	}
@@ -37,6 +42,7 @@ func main() {
 		// Prompt question
 		fmt.Printf("Question %d: %s = ", numQnsAsked, record[0])
 		fmt.Scan(&ans)
+		// Check for correct answer
 		if ans == record[1] {
 			numCorrectAns++
 		}
