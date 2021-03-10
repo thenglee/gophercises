@@ -51,6 +51,7 @@ func main() {
 	correct := 0
 	answerCh := make(chan string)
 
+problemloop:
 	for i, p := range problems {
 		fmt.Printf("Problem #%d: %s = ", i+1, p.q)
 		go func() {
@@ -61,8 +62,8 @@ func main() {
 
 		select {
 		case <-timer.C:
-			fmt.Printf("\nYou scored %d out of %d.\n", correct, len(problems))
-			return
+			fmt.Println()
+			break problemloop
 		case answer := <-answerCh:
 			if answer == p.a {
 				correct++
