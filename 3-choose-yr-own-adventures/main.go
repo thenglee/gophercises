@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+type Story map[string]StoryDetails
+
 type StoryDetails struct {
 	Title   string   `json:"title"`
 	Story   []string `json:"story"`
@@ -18,33 +20,35 @@ type Option struct {
 	Arc  string `json:"arc"`
 }
 
-func parseJson() {
+func parseJson() Story {
 	// open json file
 	jsonFile, err := os.Open("gopher.json")
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
-	fmt.Println("Successfully open json file")
 	defer jsonFile.Close()
 
 	// read jsonfile as a byte array
 	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		panic(err)
+	}
 
-	var gopherAdventure map[string]StoryDetails
-	json.Unmarshal(byteValue, &gopherAdventure)
+	// Convert json byte array data into map
+	var story Story
+	err = json.Unmarshal(byteValue, &story)
+	if err != nil {
+		panic(err)
+	}
 
-	for k, v := range gopherAdventure {
+	return story
+}
+
+func main() {
+	story := parseJson()
+	for k, v := range story {
 		fmt.Println(k)
 		fmt.Println(v)
 		fmt.Println("---")
 	}
-
-	// read from json file
-	// parse json
-	// load json data in map
-}
-
-func main() {
-	parseJson()
 }
