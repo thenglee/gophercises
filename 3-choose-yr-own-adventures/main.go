@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -50,17 +50,28 @@ type storyHandler struct {
 	story Story
 }
 
+var tmpl = template.Must(template.ParseFiles("story.html"))
+
 func (s *storyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "hello")
+	// retrieve story title
+	title := r.URL.Path[1:]
+	if title == "" {
+		title = "intro"
+	}
+
+	if story, ok := s.story[title]; ok {
+		err := tmpl.Execute(w, story)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+	http.NotFound(w, r)
 }
 
 func main() {
 	story := parseJson()
-	// for k, v := range story {
-	// 	fmt.Println(k)
-	// 	fmt.Println(v)
-	// 	fmt.Println("---")
-	// }
 
 	http.Handle("/", &storyHandler{story})
 	log.Fatal(http.ListenAndServe(":8080", nil))

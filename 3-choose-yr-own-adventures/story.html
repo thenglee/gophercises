@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>{{.Title}}</title>
+	</head>
+	<body>
+    <div>{{.Title}}</div>
+    <div>
+      {{range .Story}}<p>{{ . }}</p>{{end}}
+    </div>
+    <div>
+      {{if .Options}}
+      <div>Choose your adventure: </div>
+        {{range .Options}}
+        <div>
+          <a href="/{{.Arc}}">{{.Text}}</a>
+        </div>
+        {{end}}
+      {{else}}
+        <div>
+          Back to <a href="/intro">Intro</a>
+        </div>
+      {{end}}
+    </div>
+	</body>
+</html>
