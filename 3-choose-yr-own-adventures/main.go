@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
 )
 
@@ -44,11 +46,22 @@ func parseJson() Story {
 	return story
 }
 
+type storyHandler struct {
+	story Story
+}
+
+func (s *storyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "hello")
+}
+
 func main() {
 	story := parseJson()
-	for k, v := range story {
-		fmt.Println(k)
-		fmt.Println(v)
-		fmt.Println("---")
-	}
+	// for k, v := range story {
+	// 	fmt.Println(k)
+	// 	fmt.Println(v)
+	// 	fmt.Println("---")
+	// }
+
+	http.Handle("/", &storyHandler{story})
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
