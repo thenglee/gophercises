@@ -26,3 +26,23 @@ func JsonStory(r io.Reader) (Story, error) {
 	}
 	return story, nil
 }
+
+var defaultHandlerTmpl = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Choose Your Own Adventure</title>
+</head>
+<body>
+  <h1>{{.Title}}</h1>
+  {{range .Paragraphs}}
+  <p>{{.}}</p>
+  {{end}}
+  <ul>
+    {{range .Options}}
+    <li><a href="/{{.Chapter}}">{{.Text}}</a></li>
+    {{end}}
+  </ul>
+</body>
+</html>`
