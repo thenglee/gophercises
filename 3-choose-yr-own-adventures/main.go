@@ -22,9 +22,9 @@ type Option struct {
 	Arc  string `json:"arc"`
 }
 
-func parseJson() Story {
+func parseJson(filename string) Story {
 	// open json file
-	jsonFile, err := os.Open("gopher.json")
+	jsonFile, err := os.Open(filename)
 	if err != nil {
 		panic(err)
 	}
@@ -52,14 +52,14 @@ type storyHandler struct {
 
 var tmpl = template.Must(template.ParseFiles("story.html"))
 
-func (s *storyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (sh *storyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// retrieve story title
 	title := r.URL.Path[1:]
 	if title == "" {
 		title = "intro"
 	}
 
-	if story, ok := s.story[title]; ok {
+	if story, ok := sh.story[title]; ok {
 		err := tmpl.Execute(w, story)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -71,7 +71,7 @@ func (s *storyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	story := parseJson()
+	story := parseJson("gopher.json")
 
 	http.Handle("/", &storyHandler{story})
 	log.Fatal(http.ListenAndServe(":8080", nil))
