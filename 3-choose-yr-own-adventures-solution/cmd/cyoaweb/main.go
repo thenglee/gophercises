@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	// "html/template"
 
 	"github.com/thenglee/3-choose-yr-own-adventures-solution/cyoa"
 )
@@ -26,7 +27,11 @@ func main() {
 		panic(err)
 	}
 
-	h := cyoa.NewHandler(story, nil)
+	// To test out setting custom template via optional arguments
+	// tpl := template.Must(template.New("").Parse("hello"))
+	// h := cyoa.NewHandler(story, cyoa.WithTemplate(tpl))
+
+	h := cyoa.NewHandler(story)
 	fmt.Printf("Starting the server on port: %d\n", *portPtr)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *portPtr), h))
 
