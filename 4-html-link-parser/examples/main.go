@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/thenglee/4-html-link-parser/parse"
 	"log"
@@ -8,8 +9,10 @@ import (
 )
 
 func main() {
-	filename := "ex1.html"
-	f, err := os.Open(filename)
+	filenamePtr := flag.String("filename", "ex1.html", "html file to parse as links")
+	flag.Parse()
+
+	f, err := os.Open(*filenamePtr)
 	_ = f
 	if err != nil {
 		log.Fatal(err)
