@@ -49,8 +49,7 @@ func getLinks(n *html.Node, links Links) Links {
 
 func getLinkText(n *html.Node, s []string) []string {
 	if n.Type == html.TextNode {
-		// TODO: Trim spaces, nextlines
-		s = append(s, n.Data)
+		s = append(s, strings.TrimSpace(n.Data))
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		s = getLinkText(c, s)
