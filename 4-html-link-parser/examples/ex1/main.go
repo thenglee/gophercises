@@ -17,8 +17,8 @@ func main() {
 	fmt.Println("File opened successfully")
 
 	// s := `<p>Links:</p><ul><li><a href="foo">Foo</a><li><a href="/bar/baz">BarBaz</a></ul>`
-	// parse.GetLinks(strings.NewReader(s))
+	// links := parse.GetLinks(strings.NewReader(s))
 
 	links := parse.GetLinks(f)
-	fmt.Println(links)
+	fmt.Printf("links: %+v\n", links)
 }
