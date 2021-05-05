@@ -13,31 +13,92 @@ import (
 
 func main() {
 	urlPtr := flag.String("URL", "https://www.calhoun.io/", "URL to generate sitemap")
+	depthPtr := flag.Int("Depth", 3, "Max number of links to get to each page")
 	flag.Parse()
 
-	resp, err := http.Get(*urlPtr)
+	result := bfsTraverse(*urlPtr, *depthPtr)
+	for k, _ := range result {
+		fmt.Printf("l: %s\n", k)
+	}
+
+}
+
+func bfsTraverse(rootUrl string, depth int) map[string]bool {
+	queue := []string{
+		rootUrl,
+	}
+	level := map[string]int{
+		rootUrl: 1,
+	}
+	visited := map[string]bool{
+		rootUrl: true,
+	}
+
+	fmt.Println("rootUrl ", rootUrl)
+	fmt.Println("depth ", depth)
+
+	i := 0
+
+	for len(queue) > 0 {
+		// get the first item from the queue
+		x := queue[i]
+		// fmt.Println("x ", x)
+
+		fmt.Println("level ", level[x])
+		// break when max number of links visited
+		if level[x]+1 > depth {
+			// fmt.Printf("break")
+			break
+		}
+
+		// retrieve the links present on the page
+		sameDomainLinks, err := getChildrenLinks(x)
+		if err != nil {
+			log.Fatal(err)
+			break
+		}
+
+		// loop through each of the links
+		for _, link := range sameDomainLinks {
+			// fmt.Println("link ", link)
+
+			// If link is visited, next
+			if _, ok := visited[link]; ok {
+				// fmt.Println("link visited, found in map")
+				continue
+			}
+
+			// enqueue link
+			queue = append(queue, link)
+
+			// level of link is level of x + 1
+			level[link] = level[x] + 1
+
+			// mark link as visited
+			visited[link] = true
+		}
+		i++
+	}
+
+	return visited
+}
+
+func getChildrenLinks(url string) ([]string, error) {
+	// visit url
+	body, err := getHTMLBody(url)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	// get links in body
+	links, err := getLinks(body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	r := strings.NewReader(string(body))
-	links, err := link.Parse(r)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// fmt.Printf("%+v\n", links)
-
-	sameDomainLinks := linksInSameDomain(*urlPtr, links)
-	for _, l := range sameDomainLinks {
-		fmt.Println(l)
-	}
+	// retrieve same domain links
+	sameDomainLinks := linksInSameDomain(url, links)
+	return sameDomainLinks, nil
 }
 
 func linksInSameDomain(rootUrl string, links []link.Link) []string {
@@ -72,4 +133,28 @@ func trimRootUrl(rootUrl string) string {
 		rootUrl = rootUrl[:length-1]
 	}
 	return rootUrl
+}
+
+func getHTMLBody(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func getLinks(body []byte) ([]link.Link, error) {
+	r := strings.NewReader(string(body))
+	links, err := link.Parse(r)
+	if err != nil {
+		return nil, err
+	}
+	return links, nil
 }
