@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/thenglee/5-sitemap/link"
+	"github.com/thenglee/5-sitemap/sitemap"
 )
 
 func main() {
@@ -16,10 +17,23 @@ func main() {
 	depthPtr := flag.Int("Depth", 3, "Max number of links to get to each page")
 	flag.Parse()
 
+	// visit and retrieve links based on depth
 	result := bfsTraverse(*urlPtr, *depthPtr)
-	for k, _ := range result {
-		fmt.Printf("l: %s\n", k)
+
+	// Generate a slice of sitemap Url structs
+	links := make([]*sitemap.Url, len(result))
+	i := 0
+	for k := range result {
+		links[i] = &sitemap.Url{Loc: k}
+		i++
 	}
+
+	// retrieve the generated XML based on the Url structs
+	output, err := sitemap.SiteMap(links)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(output))
 
 }
 
@@ -34,20 +48,14 @@ func bfsTraverse(rootUrl string, depth int) map[string]bool {
 		rootUrl: true,
 	}
 
-	fmt.Println("rootUrl ", rootUrl)
-	fmt.Println("depth ", depth)
-
 	i := 0
 
 	for len(queue) > 0 {
 		// get the first item from the queue
 		x := queue[i]
-		// fmt.Println("x ", x)
 
-		fmt.Println("level ", level[x])
 		// break when max number of links visited
 		if level[x]+1 > depth {
-			// fmt.Printf("break")
 			break
 		}
 
@@ -60,11 +68,9 @@ func bfsTraverse(rootUrl string, depth int) map[string]bool {
 
 		// loop through each of the links
 		for _, link := range sameDomainLinks {
-			// fmt.Println("link ", link)
 
 			// If link is visited, next
 			if _, ok := visited[link]; ok {
-				// fmt.Println("link visited, found in map")
 				continue
 			}
 
