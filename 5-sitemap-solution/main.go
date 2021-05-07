@@ -22,6 +22,7 @@ import (
 
 func main() {
 	urlFlag := flag.String("url", "https://gophercises.com", "the url that you want to build a sitemap for")
+	maxDepth := flag.Int("depth", 3, "the maximum number of links deep to traverse")
 	flag.Parse()
 
 	/*
@@ -31,11 +32,44 @@ func main() {
 		mailto:jon@calhoun.io
 	*/
 
-	pages := get(*urlFlag)
+	pages := bfs(*urlFlag, *maxDepth)
 
 	for _, p := range pages {
 		fmt.Println(p)
 	}
+}
+
+func bfs(urlStr string, maxDepth int) []string {
+	seen := make(map[string]struct{}) // value is struct rather than bool as struct is more memory efficient
+	var q map[string]struct{}         // current q to loop and visit
+	nq := map[string]struct{}{        // next q, for appending the current page's links
+		urlStr: struct{}{},
+	}
+
+	for i := 0; i <= maxDepth; i++ {
+		// assign nq to q, create and assign a new empty map to nq
+		q, nq = nq, make(map[string]struct{})
+
+		for currentUrl, _ := range q {
+			// if currentUrl is visited, continue
+			if _, ok := seen[currentUrl]; ok {
+				continue
+			}
+			// mark currentUrl as seen
+			seen[currentUrl] = struct{}{}
+			// retrieve links on currentUrl page and add to nq
+			for _, link := range get(currentUrl) {
+				nq[link] = struct{}{}
+			}
+		}
+	}
+
+	ret := make([]string, 0, len(seen))
+	// convert map of urls to slice of urls
+	for url, _ := range seen {
+		ret = append(ret, url)
+	}
+	return ret
 }
 
 func get(urlStr string) []string {
